@@ -1,0 +1,39 @@
+---
+- name: Enable ZFS in sysrc
+  sysrc: name=zfs_enable value=YES
+
+- name: Install ezjail
+  pkgng: name=ezjail state=present
+
+- name: Enable ezjail in sysrc
+  sysrc: name=ezjail_enable value=YES
+
+- name: Create ZFS dataset for jails
+  zfs: name={{ ezjail_jailzfs }} state=present mountpoint=/usr/jails
+
+- name: Configure ezjail to use ZFS
+  sysrc: name={{ item.name }} value="{{item.value}}" dest=/usr/local/etc/ezjail.conf
+  with_items:
+    - { name: 'ezjail_use_zfs', value: 'YES' }
+    - { name: 'ezjail_use_zfs_for_jails', value: 'YES' }
+    - { name: 'ezjail_jailzfs', value: "{{ ezjail_jailzfs }}" }
+
+- name: Check if the base jail is already present
+  stat: path=/usr/jails/basejail/
+  register: basejail_present
+
+- name: Create the base jail
+  command: ezjail-admin install
+  when: basejail_present.stat.exists == False
+
+- include: jail.yml jail={{ item }}
+  with_items: "{{ jails }}"
+
+- name: Allow jails to use raw sockets
+  sysctl: name=security.jail.allow_raw_sockets value=1 reload=yes
+
+- name: Prevent jails from using unknown network protocols
+  sysctl: name=security.jail.socket_unixiproute_only value=1 reload=yes
+
+- name: Enable securelevel
+  sysrc: name=kern_securelevel_enable value=YES

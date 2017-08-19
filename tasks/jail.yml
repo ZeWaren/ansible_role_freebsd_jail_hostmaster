@@ -1,0 +1,51 @@
+---
+- name: Check if jail already exists
+  command: ezjail-admin config -r test {{ jail.name }}
+  ignore_errors: True
+  register: jail_exists
+
+- name: Create the jail
+  command: ezjail-admin create {{ jail.name }} {{ jail.ip_address }}
+  when: jail_exists|failed
+
+- name: Check if resolv.conf alreay exists
+  stat: path=/usr/jails/{{ jail.name }}/etc/resolv.conf
+  register: resolv_conf_present
+
+- name: Copy resolv.conf to jail
+  copy: remote_src=True src=/etc/resolv.conf dest=/usr/jails/{{ jail.name }}/etc/resolv.conf
+  when: resolv_conf_present.stat.exists == False
+
+- name: Allow the jail to use raw sockets
+  lineinfile:
+    dest: "/usr/local/etc/ezjail/{{ jail.name }}"
+    regexp: ^export jail_{{ jail.name }}_parameters
+    line: export jail_{{ jail.name }}_parameters={{ jail.parameters|to_json }}
+
+- name: Check if the jail is already running
+  command: jls -j {{ jail.name }}
+  ignore_errors: yes
+  register: jail_is_running
+
+- name: Ensure the jail is started
+  command: ezjail-admin start {{ jail.name }}
+  when: jail.started and jail_is_running.rc == 1
+
+- name: Ensure the jail is stopped
+  command: ezjail-admin stop {{ jail.name }}
+  when: not jail.started and jail_is_running.rc == 0
+
+- name: Make sure pkg is installed in the jail
+  command: env ASSUME_ALWAYS_YES=YES pkg -j {{ jail.name }} install pkg
+  when: jail.started
+
+- name: Make sure python27 is installed in the jail
+  command: env ASSUME_ALWAYS_YES=YES pkg -j {{ jail.name }} install python27
+  when: jail.started
+
+#- name: Ensure the ansible public key is present in sshd
+#  authorized_key:
+#    user: root
+#    state: present
+#    key: "{{ lookup('file', ansible_ssh_private_key_file+'.pub') }}"
+#    path: /usr/jails/{{ jail.name }}/root/.ssh/
