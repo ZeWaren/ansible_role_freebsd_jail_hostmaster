@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: "Erwan Martin"
+  license: BSD
+  min_ansible_version: 2.2
+  platforms:
+    - name: FreeBSD
+      versions:
+        - all
+allow_duplicates: yes
+dependencies: []
