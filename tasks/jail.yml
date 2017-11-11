@@ -22,6 +22,35 @@
     regexp: ^export jail_{{ jail.name }}_parameters
     line: export jail_{{ jail.name }}_parameters={{ jail.parameters|to_json }}
 
+- name: Ensure sshd is enabled in the jail
+  sysrc: name=sshd_enable value=YES dest=/usr/jails/{{ jail.name }}/etc/rc.conf
+  when: jail.started and jail.start_ssh
+
+- name: Ensure sshd is only listening on the jail address
+  lineinfile:
+    dest: /usr/jails/{{ jail.name }}/etc/ssh/sshd_config
+    regexp: '^ListenAddress '
+    line: ListenAddress {{ jail.ip_address }}
+  when: jail.start_ssh
+
+- name: Ensure the ssh folder of user ansible is present
+  file:
+    path: /usr/jails/{{ jail.name }}/home/ansible/.ssh
+    state: directory
+    mode: 0755
+    owner: root
+    group: wheel
+
+- name: Ensure the authorized_keys of user ansible is present
+  copy:
+    dest: /usr/jails/{{ jail.name }}/home/ansible/.ssh/authorized_keys
+    content: "{{ lookup('file', ansible_ssh_private_key_file+'.pub') }}"
+    force: no
+    mode: 0644
+    owner: root
+    group: wheel
+  when: jail.start_ssh
+
 - name: Check if the jail is already running
   command: jls -j {{ jail.name }}
   ignore_errors: yes
@@ -43,9 +72,24 @@
   command: env ASSUME_ALWAYS_YES=YES pkg -j {{ jail.name }} install python27
   when: jail.started
 
-#- name: Ensure the ansible public key is present in sshd
-#  authorized_key:
-#    user: root
-#    state: present
-#    key: "{{ lookup('file', ansible_ssh_private_key_file+'.pub') }}"
-#    path: /usr/jails/{{ jail.name }}/root/.ssh/
+- name: Check if the ansible user exists in the jail
+  command: ezjail-admin console -e "getent passwd ansible" {{ jail.name }}
+  ignore_errors: yes
+  when: jail.started
+  register: ansible_user_exists_in_jail
+
+- name: Ensure the ansible user exists in the jail
+  command: ezjail-admin console -e "pw useradd -m -G wheel -s /bin/sh -n ansible" {{ jail.name }}
+  when: jail.started and ansible_user_exists_in_jail.rc != 0
+
+- name: Install sudo in the jail
+  command: env ASSUME_ALWAYS_YES=YES pkg -j {{ jail.name }} install sudo
+  when: jail.started and jail.use_sudo
+
+- name: Allow wheel to sudo what they want
+  lineinfile:
+    dest: /usr/jails/{{ jail.name }}/usr/local/etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+  when: jail.use_sudo
