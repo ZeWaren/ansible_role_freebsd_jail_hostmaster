@@ -8,6 +8,14 @@
   command: ezjail-admin create {{ jail.name }} {{ jail.ip_address }}
   when: jail_exists|failed
 
+- name: Optionally enable ACL on the ZFS dataset
+  zfs:
+    name: "{{ ezjail_jailzfs }}/{{ jail.name }}"
+    state: present
+    aclinherit: passthrough
+    aclmode: passthrough
+  when: jail.enable_zfs_acls is defined and jail.enable_zfs_acls
+
 - name: Check if resolv.conf alreay exists
   stat: path=/usr/jails/{{ jail.name }}/etc/resolv.conf
   register: resolv_conf_present
