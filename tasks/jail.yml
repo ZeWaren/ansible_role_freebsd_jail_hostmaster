@@ -30,6 +30,19 @@
     regexp: ^export jail_{{ jail.name }}_parameters
     line: export jail_{{ jail.name }}_parameters={{ jail.parameters|to_json }}
 
+- name: Configure the rcorder of the jail 1/2
+  lineinfile:
+    dest: "/usr/local/etc/ezjail/{{ jail.name }}"
+    regexp: '^# PROVIDE:'
+    line: '# PROVIDE: ezjail_jail_{{ jail.name }}'
+
+- name: Configure the rcorder of the jail 2/2
+  lineinfile:
+    dest: "/usr/local/etc/ezjail/{{ jail.name }}"
+    regexp: '^# REQUIRE:'
+    line: '# REQUIRE: {% for j in jail.started_after %}  ezjail_jail_{{j}} {% endfor %}'
+  when: jail.started_after is defined
+
 - name: Ensure sshd is enabled in the jail
   sysrc: name=sshd_enable value=YES dest=/usr/jails/{{ jail.name }}/etc/rc.conf
   when: jail.started and jail.start_ssh
