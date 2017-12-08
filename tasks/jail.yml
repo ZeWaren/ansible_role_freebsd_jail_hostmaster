@@ -89,13 +89,6 @@
   sysrc: name=sshd_enable value=YES dest=/usr/jails/{{ jail.name }}/etc/rc.conf
   when: jail.started and jail.start_ssh
 
-- name: Ensure sshd is only listening on the jail address
-  lineinfile:
-    dest: /usr/jails/{{ jail.name }}/etc/ssh/sshd_config
-    regexp: '^ListenAddress '
-    line: ListenAddress {{ jail.ip_address }}
-  when: jail.start_ssh
-
 - name: Ensure the ssh folder of user ansible is present
   file:
     path: /usr/jails/{{ jail.name }}/home/ansible/.ssh
