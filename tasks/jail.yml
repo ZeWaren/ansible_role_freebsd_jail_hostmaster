@@ -30,6 +30,13 @@
     regexp: ^export jail_{{ jail.name }}_parameters
     line: export jail_{{ jail.name }}_parameters={{ jail.parameters|to_json }}
 
+- name: Set the jail ZFS datasets
+  lineinfile:
+    dest: "/usr/local/etc/ezjail/{{ jail.name }}"
+    regexp: ^export jail_{{ jail.name }}_zfs_datasets
+    line: export jail_{{ jail.name }}_zfs_datasets={{ jail.zfs_datasets|to_json }}
+  when: jail.zfs_datasets is defined
+
 - name: Configure the rcorder of the jail 1/2
   lineinfile:
     dest: "/usr/local/etc/ezjail/{{ jail.name }}"
