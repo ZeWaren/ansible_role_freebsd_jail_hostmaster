@@ -72,6 +72,35 @@
     group: wheel
   when: jail.start_ssh
 
+- name: Ensure sshd is enabled in the jail
+  sysrc: name=sshd_enable value=YES dest=/usr/jails/{{ jail.name }}/etc/rc.conf
+  when: jail.started and jail.start_ssh
+
+- name: Ensure sshd is only listening on the jail address
+  lineinfile:
+    dest: /usr/jails/{{ jail.name }}/etc/ssh/sshd_config
+    regexp: '^ListenAddress '
+    line: ListenAddress {{ jail.ip_address }}
+  when: jail.start_ssh
+
+- name: Ensure the ssh folder of user ansible is present
+  file:
+    path: /usr/jails/{{ jail.name }}/home/ansible/.ssh
+    state: directory
+    mode: 0755
+    owner: root
+    group: wheel
+
+- name: Ensure the authorized_keys of user ansible is present
+  copy:
+    dest: /usr/jails/{{ jail.name }}/home/ansible/.ssh/authorized_keys
+    content: "{{ lookup('file', ansible_ssh_private_key_file+'.pub') }}"
+    force: no
+    mode: 0644
+    owner: root
+    group: wheel
+  when: jail.start_ssh
+
 - name: Check if the jail is already running
   command: jls -j {{ jail.name }}
   ignore_errors: yes
