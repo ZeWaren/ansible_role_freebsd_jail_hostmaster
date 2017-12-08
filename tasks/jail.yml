@@ -24,7 +24,7 @@
   copy: remote_src=True src=/etc/resolv.conf dest=/usr/jails/{{ jail.name }}/etc/resolv.conf
   when: resolv_conf_present.stat.exists == False
 
-- name: Allow the jail to use raw sockets
+- name: Set the jail parameters
   lineinfile:
     dest: "/usr/local/etc/ezjail/{{ jail.name }}"
     regexp: ^export jail_{{ jail.name }}_parameters
