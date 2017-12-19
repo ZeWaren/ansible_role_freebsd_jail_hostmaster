@@ -24,6 +24,12 @@
   copy: remote_src=True src=/etc/resolv.conf dest=/usr/jails/{{ jail.name }}/etc/resolv.conf
   when: resolv_conf_present.stat.exists == False
 
+- name: Set the jail hostname
+  lineinfile:
+    dest: "/usr/local/etc/ezjail/{{ jail.name }}"
+    regexp: ^export jail_{{ jail.name }}_hostname
+    line: export jail_{{ jail.name }}_hostname={{ jail.hostname|to_json }}
+
 - name: Set the jail parameters
   lineinfile:
     dest: "/usr/local/etc/ezjail/{{ jail.name }}"
