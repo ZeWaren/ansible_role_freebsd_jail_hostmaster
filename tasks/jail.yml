@@ -149,3 +149,11 @@
     regexp: '^%wheel'
     line: '%wheel ALL=(ALL) NOPASSWD: ALL'
   when: jail.use_sudo
+
+- name: Allow ansible to sudo what it wants
+  lineinfile:
+    dest: /usr/jails/{{ jail.name }}/usr/local/etc/sudoers
+    state: present
+    regexp: '^ansible '
+    line: 'ansible ALL=(ALL) NOPASSWD: ALL'
+  when: jail.use_sudo
