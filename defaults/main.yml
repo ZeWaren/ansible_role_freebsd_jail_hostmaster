@@ -1,3 +1,4 @@
 ---
 ezjail_jailzfs: zroot/jails
 jails: []
+jailed_zfs_endpoint: []

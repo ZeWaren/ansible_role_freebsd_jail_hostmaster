@@ -11,6 +11,10 @@
 - name: Create ZFS dataset for jails
   zfs: name={{ ezjail_jailzfs }} state=present mountpoint=/usr/jails
 
+- name: Jail the jailed ZFS endpoints
+  command: "zfs set jailed=on {{ item }}"
+  with_items: "{{ jailed_zfs_endpoint }}"
+
 - name: Configure ezjail to use ZFS
   sysrc: name={{ item.name }} value="{{item.value}}" dest=/usr/local/etc/ezjail.conf
   with_items:
