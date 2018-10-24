@@ -70,7 +70,7 @@
   lineinfile:
     dest: /usr/jails/{{ jail.name }}/etc/ssh/sshd_config
     regexp: '^ListenAddress '
-    line: ListenAddress {{ jail.ip_address }}
+    line: ListenAddress {{ jail.ip_address.split(",")[0] }}
   when: jail.start_ssh
 
 - name: Ensure the ssh folder of user ansible is present
