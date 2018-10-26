@@ -30,6 +30,12 @@
     regexp: ^export jail_{{ jail.name }}_hostname
     line: export jail_{{ jail.name }}_hostname={{ jail.hostname|to_json }}
 
+- name: Set the jail IPs
+  lineinfile:
+    dest: "/usr/local/etc/ezjail/{{ jail.name }}"
+    regexp: ^export jail_{{ jail.name }}_ip
+    line: export jail_{{ jail.name }}_ip={{ jail.ip_address }}
+
 - name: Set the jail devfs ruleset. Setting it to "4" instead of the same ruleset's name allow hierachical jails.
   lineinfile:
     dest: "/usr/local/etc/ezjail/{{ jail.name }}"
