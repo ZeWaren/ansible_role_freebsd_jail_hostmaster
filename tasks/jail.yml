@@ -55,6 +55,13 @@
     line: export jail_{{ jail.name }}_zfs_datasets={{ jail.zfs_datasets|to_json }}
   when: jail.zfs_datasets is defined
 
+- name: Set the jail stop command
+  lineinfile:
+    dest: "/usr/local/etc/ezjail/{{ jail.name }}"
+    regexp: ^export jail_{{ jail.name }}_exec_stop
+    line: export jail_{{ jail.name }}_exec_stop="{{ jail.exec_stop }}"
+  when: jail.exec_stop is defined
+
 - name: Configure the rcorder of the jail 1/2
   lineinfile:
     dest: "/usr/local/etc/ezjail/{{ jail.name }}"
