@@ -65,22 +65,22 @@ If set, ensure a list of jails is started before this one.
 
 ## Example
 
-ezjail_jailzfs: zroot/jails
-jails:
-  - name: "example_com"
-    hostname: "example.com"
-    ip_address: "10.4.2.150"
-    started: yes
-    parameters: allow.raw_sockets allow.socket_af securelevel=3
-    start_ssh: yes
-    use_sudo: yes
-  - name: "example_net"
-    hostname: "example.net"
-    ip_address: "10.4.2.155,10.4.2.156"
-    started: yes
-    parameters: allow.raw_sockets allow.socket_af securelevel=3
-    start_ssh: yes
-    use_sudo: yes
+	ezjail_jailzfs: zroot/jails
+	jails:
+	  - name: "example_com"
+	    hostname: "example.com"
+	    ip_address: "10.4.2.150"
+	    started: yes
+	    parameters: allow.raw_sockets allow.socket_af securelevel=3
+	    start_ssh: yes
+	    use_sudo: yes
+	  - name: "example_net"
+	    hostname: "example.net"
+	    ip_address: "10.4.2.155,10.4.2.156"
+	    started: yes
+	    parameters: allow.raw_sockets allow.socket_af securelevel=3
+	    start_ssh: yes
+	    use_sudo: yes
 
 ## Dependencies
 
